@@ -2,17 +2,16 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Metodologia STAR — Apresentação</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════════════════════════
-           DESIGN TOKENS — Single Source of Truth
+           DESIGN TOKENS
            ═══════════════════════════════════════════════════════════ */
         :root {
-            /* ── Colors (systematic palette, no pure black/white) ── */
             --color-bg-primary: #0F172A;
             --color-bg-secondary: #1E293B;
             --color-bg-surface: #334155;
@@ -40,7 +39,6 @@
             --color-warning: #F59E0B;
             --color-danger: #EF4444;
 
-            /* ── Spacing Scale (4px base) ── */
             --space-1: 4px;
             --space-2: 8px;
             --space-3: 12px;
@@ -54,7 +52,6 @@
             --space-20: 80px;
             --space-24: 96px;
 
-            /* ── Typography Scale (modular, 1.25 ratio) ── */
             --font-display: 'Outfit', sans-serif;
             --font-body: 'Inter', sans-serif;
 
@@ -74,7 +71,6 @@
             --leading-normal: 1.5;
             --leading-relaxed: 1.75;
 
-            /* ── Shadows (elevation scale) ── */
             --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
             --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.2);
             --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.3), 0 4px 6px -4px rgba(0,0,0,0.2);
@@ -82,21 +78,23 @@
             --shadow-glow: 0 0 40px var(--color-brand-glow);
             --shadow-glow-sm: 0 0 20px var(--color-brand-glow);
 
-            /* ── Border Radii ── */
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
             --radius-xl: 24px;
             --radius-full: 9999px;
 
-            /* ── Transitions ── */
             --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
             --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
             --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Navigation bar height used as offset */
+            --nav-h: 68px;
         }
 
         /* ═══════════════════════════════════════════════════════════
            RESET & BASE
+           NOTE: font-size defined once here, responsive via clamp
            ═══════════════════════════════════════════════════════════ */
         *, *::before, *::after {
             margin: 0;
@@ -105,29 +103,23 @@
         }
 
         html {
-            font-size: 16px;
+            /* Single clamp — no overrides in media queries */
+            font-size: clamp(14px, 1.2vw + 10px, 18px);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            /* Lock the root to exactly the viewport — no scrolling at html/body */
+            height: 100%;
+            overflow: hidden;
         }
 
         body {
             font-family: var(--font-body);
             background: var(--color-bg-primary);
             color: var(--color-text-primary);
+            /* Exactly fill the viewport — never scrollable */
+            height: 100%;
+            width: 100%;
             overflow: hidden;
-            height: 100vh;
-            height: 100dvh;
-            width: 100vw;
-            width: 100dvw;
-        }
-
-        /* Keep body locked, scroll inside active slide only */
-        @media (max-width: 767px), (max-height: 500px) {
-            body {
-                overflow: hidden;
-                height: 100vh;
-                height: 100dvh;
-            }
         }
 
         /* ═══════════════════════════════════════════════════════════
@@ -137,18 +129,19 @@
             position: fixed;
             inset: 0;
             z-index: 0;
-            background: 
+            background:
                 radial-gradient(ellipse at 20% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 70%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
                 radial-gradient(ellipse at 50% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 70%);
             pointer-events: none;
+            animation: meshFloat 20s ease-in-out infinite;
         }
 
         .bg-grid {
             position: fixed;
             inset: 0;
             z-index: 0;
-            background-image: 
+            background-image:
                 linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
             background-size: 60px 60px;
@@ -157,70 +150,74 @@
 
         /* ═══════════════════════════════════════════════════════════
            SLIDE SYSTEM
+           Each slide is position:absolute, fills the entire viewport.
+           On mobile the inner .slide-inner scrolls; the slide itself
+           does NOT scroll — that way the viewport is always locked.
            ═══════════════════════════════════════════════════════════ */
         .presentation {
-            position: relative;
-            width: 100vw;
-            width: 100dvw;
-            height: 100vh;
-            height: 100dvh;
+            position: fixed;           /* covers the full viewport */
+            inset: 0;
             overflow: hidden;
-        }
-
-        @media (max-width: 767px), (max-height: 500px) {
-            .presentation {
-                height: 100vh;
-                height: 100dvh;
-                overflow: hidden;
-            }
+            z-index: 1;
         }
 
         .slide {
             position: absolute;
             inset: 0;
+            /* leave room for the fixed nav bar at the bottom */
+            padding-bottom: calc(var(--nav-h) + 8px);
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: var(--space-8) var(--space-6);
+            /* inactive state */
             opacity: 0;
             visibility: hidden;
-            transform: translateX(60px);
-            transition: opacity var(--transition-slow), transform var(--transition-slow), visibility 0s var(--transition-slow);
+            transform: translateX(80px) scale(0.96);
+            transition:
+                opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
+                transform 500ms cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0s 500ms;
             z-index: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        @media (max-width: 767px), (max-height: 500px) {
-            .slide {
-                transform: translateX(30px);
-                padding: var(--space-5) var(--space-4) 100px;
-                justify-content: flex-start;
-                padding-top: 10vh;
-            }
-
-            .slide.active {
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .slide.prev {
-                transform: translateX(-30px);
-            }
+            /* The slide itself must NOT scroll */
+            overflow: hidden;
         }
 
         .slide.active {
             opacity: 1;
             visibility: visible;
-            transform: translateX(0);
-            transition: opacity var(--transition-slow), transform var(--transition-slow), visibility 0s;
+            transform: translateX(0) scale(1);
+            transition:
+                opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
+                transform 500ms cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0s 0s;
             z-index: 2;
         }
 
         .slide.prev {
-            transform: translateX(-60px);
+            opacity: 0;
+            transform: translateX(-80px) scale(0.96);
+        }
+
+        /* The scrollable inner wrapper that lives inside each slide */
+        .slide-inner {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;     /* center on desktop */
+            padding: var(--space-8) var(--space-6);
+            /* On mobile we want content to start at top so it can scroll */
+        }
+
+        @media (max-width: 767px) {
+            .slide-inner {
+                justify-content: flex-start;
+                padding: var(--space-8) var(--space-4) var(--space-6);
+            }
         }
 
         /* ═══════════════════════════════════════════════════════════
@@ -235,13 +232,11 @@
             gap: var(--space-8);
             position: relative;
             z-index: 2;
-            padding: 0 var(--space-2);
         }
 
         @media (max-width: 480px) {
             .slide-content {
                 gap: var(--space-4);
-                padding: 0 var(--space-1);
             }
         }
 
@@ -260,7 +255,7 @@
 
         .heading-section {
             font-family: var(--font-display);
-            font-size: clamp(var(--text-3xl), 4vw, var(--text-5xl));
+            font-size: clamp(var(--text-2xl), 3.5vw, var(--text-5xl));
             font-weight: 700;
             line-height: var(--leading-snug);
             letter-spacing: -0.02em;
@@ -278,7 +273,7 @@
 
         .text-body {
             font-family: var(--font-body);
-            font-size: var(--text-lg);
+            font-size: clamp(var(--text-base), 1.5vw, var(--text-lg));
             font-weight: 400;
             line-height: var(--leading-relaxed);
             color: var(--color-text-secondary);
@@ -309,22 +304,17 @@
         .card {
             background: var(--color-bg-card);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: var(--radius-lg);
             padding: var(--space-6);
-            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+            transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
         }
 
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .card-solid {
-            background: var(--color-bg-card-solid);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: var(--radius-lg);
-            padding: var(--space-6);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: var(--shadow-xl), 0 0 30px rgba(99, 102, 241, 0.08);
+            border-color: rgba(99, 102, 241, 0.15);
         }
 
         /* ═══════════════════════════════════════════════════════════
@@ -341,7 +331,6 @@
             font-size: var(--text-4xl);
             font-weight: 800;
             color: white;
-            position: relative;
             transition: transform var(--transition-normal), box-shadow var(--transition-normal);
             cursor: default;
         }
@@ -395,16 +384,7 @@
         }
 
         /* ═══════════════════════════════════════════════════════════
-           TIMELINE / STEPS
-           ═══════════════════════════════════════════════════════════ */
-        .step-connector {
-            width: 2px;
-            background: linear-gradient(to bottom, var(--color-s), var(--color-t), var(--color-a), var(--color-r));
-            opacity: 0.4;
-        }
-
-        /* ═══════════════════════════════════════════════════════════
-           ICONS (SVG inline)
+           ICON BOX
            ═══════════════════════════════════════════════════════════ */
         .icon-box {
             width: 48px;
@@ -415,6 +395,7 @@
             justify-content: center;
             background: var(--color-bg-accent);
             flex-shrink: 0;
+            transition: all var(--transition-normal);
         }
 
         .icon-box svg {
@@ -432,26 +413,29 @@
            ═══════════════════════════════════════════════════════════ */
         .nav-controls {
             position: fixed;
-            bottom: var(--space-6);
+            bottom: var(--space-5);
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) translateY(20px);
             display: flex;
             align-items: center;
             gap: var(--space-4);
             z-index: 100;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.9);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: var(--radius-full);
             padding: var(--space-3) var(--space-5);
             box-shadow: var(--shadow-lg);
-            max-width: calc(100vw - var(--space-6));
+            max-width: calc(100vw - var(--space-8));
+            /* entrance animation */
+            opacity: 0;
+            animation: navEntrance 0.6s ease-out 0.8s forwards;
         }
 
         @media (max-width: 480px) {
             .nav-controls {
-                bottom: var(--space-3);
+                bottom: max(var(--space-3), env(safe-area-inset-bottom));
                 padding: var(--space-2) var(--space-3);
                 gap: var(--space-2);
             }
@@ -470,6 +454,7 @@
             justify-content: center;
             transition: all var(--transition-fast);
             outline: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .nav-btn:hover {
@@ -528,6 +513,7 @@
             transition: all var(--transition-fast);
             outline: none;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .slide-dot:hover {
@@ -553,58 +539,118 @@
             top: 0;
             left: 0;
             height: 3px;
-            background: linear-gradient(90deg, var(--color-brand-primary), var(--color-brand-secondary));
+            background: linear-gradient(90deg, var(--color-brand-primary), var(--color-brand-secondary), var(--color-brand-primary));
+            background-size: 200% 100%;
+            animation: progressShimmer 2s linear infinite;
             transition: width var(--transition-normal);
             z-index: 100;
             box-shadow: 0 0 10px var(--color-brand-glow);
         }
 
-        @media (max-width: 480px) {
-            .progress-bar {
-                height: 2px;
-            }
+        /* ═══════════════════════════════════════════════════════════
+           FULLSCREEN BUTTON
+           ═══════════════════════════════════════════════════════════ */
+        .fullscreen-btn {
+            position: fixed;
+            top: var(--space-4);
+            right: var(--space-4);
+            z-index: 100;
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            outline: none;
+            box-shadow: var(--shadow-md);
+            touch-action: manipulation;
+            opacity: 0;
+            animation: fullscreenEntrance 0.6s ease-out 1s forwards;
+        }
+
+        .fullscreen-btn:hover {
+            background: var(--color-bg-surface);
+            color: var(--color-text-primary);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .fullscreen-btn:active { transform: scale(0.95); }
+        .fullscreen-btn:focus-visible { box-shadow: 0 0 0 3px var(--color-brand-glow); }
+        .fullscreen-btn.hidden { opacity: 0 !important; pointer-events: none; transform: scale(0.8); }
+
+        .fullscreen-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         /* ═══════════════════════════════════════════════════════════
-           SLIDE-SPECIFIC STYLES
+           SLIDE-SPECIFIC: TITLE (Slide 1)
            ═══════════════════════════════════════════════════════════ */
-
-        /* ── Slide 1: Title ── */
-        .slide-title .slide-content {
-            gap: var(--space-6);
-        }
-
         .star-visual {
             display: flex;
             gap: var(--space-4);
-            margin-bottom: var(--space-4);
+            margin-bottom: var(--space-2);
         }
 
+        /* STAR letter entrance — runs only when slide is .active */
         .star-visual .star-letter {
-            animation: letterEntrance 0.6s ease-out backwards;
+            opacity: 0;
+            transform: translateY(40px) scale(0.5) rotate(-10deg);
         }
-        .star-visual .star-letter:nth-child(1) { animation-delay: 0.1s; }
-        .star-visual .star-letter:nth-child(2) { animation-delay: 0.2s; }
-        .star-visual .star-letter:nth-child(3) { animation-delay: 0.3s; }
-        .star-visual .star-letter:nth-child(4) { animation-delay: 0.4s; }
 
-        @keyframes letterEntrance {
-            from { opacity: 0; transform: translateY(20px) scale(0.8); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+        .slide.active .star-visual .star-letter {
+            animation: letterBounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .slide.active .star-visual .star-letter:nth-child(1) { animation-delay: 0.10s; }
+        .slide.active .star-visual .star-letter:nth-child(2) { animation-delay: 0.25s; }
+        .slide.active .star-visual .star-letter:nth-child(3) { animation-delay: 0.40s; }
+        .slide.active .star-visual .star-letter:nth-child(4) { animation-delay: 0.55s; }
+
+        /* When slide leaves active, reset letters so they animate again next time */
+        .slide:not(.active) .star-visual .star-letter {
+            opacity: 0;
+            transform: translateY(40px) scale(0.5) rotate(-10deg);
+            animation: none;
         }
 
         .subtitle-line {
-            width: 60px;
+            width: 0;
             height: 3px;
             background: linear-gradient(90deg, var(--color-brand-primary), var(--color-brand-secondary));
             border-radius: var(--radius-full);
             margin: 0 auto;
+            opacity: 0;
         }
 
-        /* ── Slide 2: What is STAR ── */
+        .slide.active .subtitle-line {
+            animation: lineGrow 0.8s ease-out 0.6s forwards;
+        }
+
+        .slide:not(.active) .subtitle-line {
+            opacity: 0;
+            width: 0;
+            animation: none;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           SLIDE-SPECIFIC: DEFINITION (Slide 2)
+           ═══════════════════════════════════════════════════════════ */
         .definition-card {
             background: var(--color-bg-card);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: var(--radius-xl);
             padding: var(--space-8);
@@ -631,23 +677,17 @@
             align-items: center;
             gap: var(--space-2);
             padding: var(--space-4);
-            min-width: 120px;
+            min-width: 100px;
+            transition: transform var(--transition-fast);
         }
 
-        .star-item .label {
-            font-family: var(--font-body);
-            font-size: var(--text-sm);
-            font-weight: 500;
-            color: var(--color-text-secondary);
-        }
+        .star-item:hover { transform: translateY(-4px); }
+        .star-item .label { font-size: var(--text-sm); font-weight: 500; color: var(--color-text-secondary); }
+        .star-item .label-pt { font-size: var(--text-xs); color: var(--color-text-tertiary); }
 
-        .star-item .label-pt {
-            font-family: var(--font-body);
-            font-size: var(--text-xs);
-            color: var(--color-text-tertiary);
-        }
-
-        /* ── Slide 3: S + T ── */
+        /* ═══════════════════════════════════════════════════════════
+           SLIDE-SPECIFIC: STEP CARDS (Slides 3 & 4)
+           ═══════════════════════════════════════════════════════════ */
         .two-cards {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -656,18 +696,12 @@
             max-width: 1000px;
         }
 
-        @media (max-width: 768px) {
-            .two-cards {
-                grid-template-columns: 1fr;
-            }
-        }
-
         .step-card {
             display: flex;
             flex-direction: column;
             gap: var(--space-4);
             padding: var(--space-8);
-            min-height: 320px;
+            min-height: 300px;
         }
 
         .step-card .card-header {
@@ -684,7 +718,6 @@
         }
 
         .step-card .card-subtitle {
-            font-family: var(--font-body);
             font-size: var(--text-sm);
             font-weight: 500;
             color: var(--color-text-tertiary);
@@ -693,7 +726,6 @@
         }
 
         .step-card .card-body {
-            font-family: var(--font-body);
             font-size: var(--text-base);
             line-height: var(--leading-relaxed);
             color: var(--color-text-secondary);
@@ -728,7 +760,9 @@
             line-height: var(--leading-normal);
         }
 
-        /* ── Slide 5: When to use ── */
+        /* ═══════════════════════════════════════════════════════════
+           SLIDE-SPECIFIC: WHEN TO USE (Slide 5)
+           ═══════════════════════════════════════════════════════════ */
         .when-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -737,41 +771,32 @@
             max-width: 1000px;
         }
 
-        @media (max-width: 768px) {
-            .when-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
         .when-card {
-            padding: var(--space-6);
+            padding: var(--space-5);
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: var(--space-4);
+            gap: var(--space-3);
+            transition: all var(--transition-normal);
         }
 
-        .when-card .icon-box {
-            width: 56px;
-            height: 56px;
-            border-radius: var(--radius-lg);
+        .when-card:hover {
+            transform: translateY(-6px) scale(1.02);
         }
 
-        .when-card .when-title {
-            font-family: var(--font-display);
-            font-size: var(--text-lg);
-            font-weight: 600;
-            color: var(--color-text-primary);
+        .when-card:hover .icon-box {
+            background: var(--color-bg-accent-strong);
+            transform: scale(1.1);
         }
 
-        .when-card .when-desc {
-            font-size: var(--text-sm);
-            color: var(--color-text-secondary);
-            line-height: var(--leading-normal);
-        }
+        .when-card .icon-box { width: 52px; height: 52px; border-radius: var(--radius-lg); }
+        .when-card .when-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 600; color: var(--color-text-primary); }
+        .when-card .when-desc { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-normal); }
 
-        /* ── Slide 6: Errors & Tips ── */
+        /* ═══════════════════════════════════════════════════════════
+           SLIDE-SPECIFIC: ERRORS & TIPS (Slide 6)
+           ═══════════════════════════════════════════════════════════ */
         .split-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -780,17 +805,7 @@
             max-width: 1100px;
         }
 
-        @media (max-width: 768px) {
-            .split-section {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .split-col {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-4);
-        }
+        .split-col { display: flex; flex-direction: column; gap: var(--space-4); }
 
         .split-header {
             display: flex;
@@ -808,38 +823,12 @@
             justify-content: center;
         }
 
-        .split-header .split-icon.danger {
-            background: rgba(239, 68, 68, 0.15);
-        }
-        .split-header .split-icon.danger svg {
-            stroke: var(--color-danger);
-            width: 20px;
-            height: 20px;
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
+        .split-header .split-icon.danger { background: rgba(239, 68, 68, 0.15); }
+        .split-header .split-icon.danger svg { stroke: var(--color-danger); width: 20px; height: 20px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .split-header .split-icon.success { background: rgba(16, 185, 129, 0.15); }
+        .split-header .split-icon.success svg { stroke: var(--color-success); width: 20px; height: 20px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-        .split-header .split-icon.success {
-            background: rgba(16, 185, 129, 0.15);
-        }
-        .split-header .split-icon.success svg {
-            stroke: var(--color-success);
-            width: 20px;
-            height: 20px;
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .split-header .split-title {
-            font-family: var(--font-display);
-            font-size: var(--text-xl);
-            font-weight: 700;
-        }
-
+        .split-header .split-title { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; }
         .split-header .split-title.danger { color: var(--color-danger); }
         .split-header .split-title.success { color: var(--color-success); }
 
@@ -851,6 +840,13 @@
             background: rgba(0,0,0,0.15);
             border-radius: var(--radius-md);
             border: 1px solid rgba(255,255,255,0.04);
+            transition: all var(--transition-fast);
+        }
+
+        .tip-item:hover {
+            background: rgba(99, 102, 241, 0.06);
+            border-color: rgba(99, 102, 241, 0.1);
+            transform: translateX(4px);
         }
 
         .tip-item .tip-num {
@@ -866,26 +862,17 @@
             flex-shrink: 0;
         }
 
-        .tip-item .tip-num.danger {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--color-danger);
-        }
+        .tip-item .tip-num.danger { background: rgba(239, 68, 68, 0.15); color: var(--color-danger); }
+        .tip-item .tip-num.success { background: rgba(16, 185, 129, 0.15); color: var(--color-success); }
+        .tip-item .tip-text { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-normal); }
 
-        .tip-item .tip-num.success {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--color-success);
-        }
-
-        .tip-item .tip-text {
-            font-size: var(--text-sm);
-            color: var(--color-text-secondary);
-            line-height: var(--leading-normal);
-        }
-
-        /* ── Slide 7: Conclusion ── */
+        /* ═══════════════════════════════════════════════════════════
+           SLIDE-SPECIFIC: CONCLUSION (Slide 7)
+           ═══════════════════════════════════════════════════════════ */
         .conclusion-card {
             background: var(--color-bg-card);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: var(--radius-xl);
             padding: var(--space-10) var(--space-8);
@@ -899,20 +886,13 @@
         .conclusion-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             height: 3px;
             background: linear-gradient(90deg, var(--color-s), var(--color-t), var(--color-a), var(--color-r));
         }
 
-        .conclusion-card .heading-section {
-            margin-bottom: var(--space-4);
-        }
-
-        .conclusion-card .text-body {
-            margin-bottom: var(--space-8);
-        }
+        .conclusion-card .heading-section { margin-bottom: var(--space-4); }
+        .conclusion-card .text-body { margin-bottom: var(--space-8); }
 
         .conclusion-points {
             display: flex;
@@ -927,7 +907,10 @@
             display: flex;
             align-items: flex-start;
             gap: var(--space-3);
+            transition: transform var(--transition-fast);
         }
+
+        .conclusion-point:hover { transform: translateX(6px); }
 
         .conclusion-point .check {
             width: 24px;
@@ -941,21 +924,8 @@
             margin-top: 2px;
         }
 
-        .conclusion-point .check svg {
-            width: 14px;
-            height: 14px;
-            stroke: var(--color-success);
-            fill: none;
-            stroke-width: 2.5;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .conclusion-point .point-text {
-            font-size: var(--text-base);
-            color: var(--color-text-secondary);
-            line-height: var(--leading-normal);
-        }
+        .conclusion-point .check svg { width: 14px; height: 14px; stroke: var(--color-success); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+        .conclusion-point .point-text { font-size: var(--text-base); color: var(--color-text-secondary); line-height: var(--leading-normal); }
 
         .final-message {
             margin-top: var(--space-8);
@@ -963,30 +933,13 @@
             border-top: 1px solid rgba(255,255,255,0.06);
         }
 
-        .final-message .text-body {
-            font-size: var(--text-xl);
-            font-weight: 500;
-            color: var(--color-text-primary);
-        }
+        .final-message .text-body { font-size: var(--text-base); font-weight: 500; color: var(--color-text-primary); }
 
         /* ═══════════════════════════════════════════════════════════
-           ANIMATIONS
+           ANIMATE-IN ELEMENTS
+           These are the generic stagger animations for text/labels.
+           Cards use their own keyframe (cardEntrance).
            ═══════════════════════════════════════════════════════════ */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(24px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
         .animate-in {
             opacity: 0;
             transform: translateY(24px);
@@ -996,442 +949,220 @@
             animation: fadeInUp 0.5s ease-out forwards;
         }
 
-        .slide.active .animate-in:nth-child(1) { animation-delay: 0.1s; }
-        .slide.active .animate-in:nth-child(2) { animation-delay: 0.2s; }
-        .slide.active .animate-in:nth-child(3) { animation-delay: 0.3s; }
-        .slide.active .animate-in:nth-child(4) { animation-delay: 0.4s; }
-        .slide.active .animate-in:nth-child(5) { animation-delay: 0.5s; }
-        .slide.active .animate-in:nth-child(6) { animation-delay: 0.6s; }
+        /* Reset when leaving active so animation replays on revisit */
+        .slide:not(.active) .animate-in {
+            opacity: 0;
+            transform: translateY(24px);
+            animation: none;
+        }
+
+        .slide.active .animate-in:nth-child(1) { animation-delay: 0.05s; }
+        .slide.active .animate-in:nth-child(2) { animation-delay: 0.15s; }
+        .slide.active .animate-in:nth-child(3) { animation-delay: 0.25s; }
+        .slide.active .animate-in:nth-child(4) { animation-delay: 0.35s; }
+        .slide.active .animate-in:nth-child(5) { animation-delay: 0.45s; }
+        .slide.active .animate-in:nth-child(6) { animation-delay: 0.55s; }
+
+        /* Card stagger — separate from animate-in so both can coexist */
+        .slide.active .card {
+            animation: cardEntrance 0.5s ease-out both;
+        }
+
+        .slide:not(.active) .card {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            animation: none;
+        }
+
+        /* Cards inside two-cards get staggered by their own nth-child */
+        .slide.active .two-cards .card:nth-child(1) { animation-delay: 0.20s; }
+        .slide.active .two-cards .card:nth-child(2) { animation-delay: 0.32s; }
+
+        /* when-grid cards */
+        .slide.active .when-grid .card:nth-child(1) { animation-delay: 0.15s; }
+        .slide.active .when-grid .card:nth-child(2) { animation-delay: 0.22s; }
+        .slide.active .when-grid .card:nth-child(3) { animation-delay: 0.29s; }
+        .slide.active .when-grid .card:nth-child(4) { animation-delay: 0.36s; }
+        .slide.active .when-grid .card:nth-child(5) { animation-delay: 0.43s; }
+        .slide.active .when-grid .card:nth-child(6) { animation-delay: 0.50s; }
+
+        /* single conclusion-card */
+        .slide.active .conclusion-card {
+            animation: cardEntrance 0.5s ease-out 0.10s both;
+        }
+
+        /* definition-card */
+        .slide.active .definition-card {
+            animation: cardEntrance 0.5s ease-out 0.20s both;
+        }
+
+        /* Badge pulse */
+        .slide.active .badge {
+            animation: badgePulse 2s ease-in-out 1s infinite;
+        }
+        .slide:not(.active) .badge {
+            animation: none;
+        }
 
         /* ═══════════════════════════════════════════════════════════
-           RESPONSIVE — Fluid & Adaptive
+           KEYFRAMES — defined once, no duplicates
+           ═══════════════════════════════════════════════════════════ */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes letterBounce {
+            from { opacity: 0; transform: translateY(40px) scale(0.5) rotate(-10deg); }
+            to   { opacity: 1; transform: translateY(0)    scale(1)   rotate(0deg); }
+        }
+
+        @keyframes lineGrow {
+            from { width: 0;    opacity: 0; }
+            to   { width: 60px; opacity: 1; }
+        }
+
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0)    scale(1); }
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 0 0 0   rgba(99, 102, 241, 0.0); }
+            50%       { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.08); }
+        }
+
+        @keyframes progressShimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        @keyframes meshFloat {
+            0%, 100% { transform: scale(1)    rotate(0deg); }
+            50%       { transform: scale(1.05) rotate(1deg); }
+        }
+
+        @keyframes navEntrance {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @keyframes fullscreenEntrance {
+            from { opacity: 0; transform: scale(0.8) translateY(-10px); }
+            to   { opacity: 1; transform: scale(1)   translateY(0); }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           RESPONSIVE BREAKPOINTS
+           Only layout/grid changes — NO font-size overrides
            ═══════════════════════════════════════════════════════════ */
 
-        /* ── Base fluid scaling ── */
-        html {
-            font-size: clamp(14px, 1.5vw + 10px, 18px);
-        }
-
-        /* ── Small phones (up to 480px) ── */
-        @media (max-width: 480px) {
-            html {
-                font-size: 14px;
-            }
-
-            .slide {
-                padding: var(--space-4) var(--space-3);
-                justify-content: flex-start;
-                padding-top: 15vh;
-                padding-bottom: 100px;
-            }
-
-            .slide-content {
-                gap: var(--space-4);
-                max-width: 100%;
-            }
-
-            .heading-hero {
-                font-size: var(--text-3xl);
-                letter-spacing: -0.02em;
-            }
-
-            .heading-section {
-                font-size: var(--text-2xl);
-            }
-
-            .star-letter {
-                width: 52px;
-                height: 52px;
-                font-size: var(--text-2xl);
-                border-radius: var(--radius-sm);
-            }
-
-            .star-visual {
-                gap: var(--space-2);
-            }
-
-            .star-letter-small {
-                width: 40px;
-                height: 40px;
-                font-size: var(--text-xl);
-            }
-
-            .text-body {
-                font-size: var(--text-base);
-                max-width: 100%;
-                padding: 0 var(--space-2);
-            }
-
-            .two-cards {
-                grid-template-columns: 1fr;
-                gap: var(--space-4);
-                max-width: 100%;
-            }
-
-            .step-card {
-                padding: var(--space-4);
-                min-height: auto;
-                gap: var(--space-3);
-            }
-
-            .step-card .card-title {
-                font-size: var(--text-lg);
-            }
-
-            .step-card .card-body {
-                font-size: var(--text-sm);
-            }
-
-            .definition-card {
-                padding: var(--space-4);
-                max-width: 100%;
-            }
-
-            .star-row {
-                gap: var(--space-2);
-            }
-
-            .star-item {
-                min-width: 70px;
-                padding: var(--space-2);
-            }
-
-            .star-item .label {
-                font-size: var(--text-xs);
-            }
-
-            .star-item .label-pt {
-                font-size: 10px;
-            }
-
-            .when-grid {
-                grid-template-columns: 1fr;
-                gap: var(--space-3);
-                max-width: 100%;
-            }
-
-            .when-card {
-                padding: var(--space-4);
-                flex-direction: row;
-                text-align: left;
-                gap: var(--space-3);
-            }
-
-            .when-card .icon-box {
-                width: 44px;
-                height: 44px;
-            }
-
-            .when-card .when-title {
-                font-size: var(--text-base);
-            }
-
-            .when-card .when-desc {
-                font-size: var(--text-xs);
-            }
-
-            .split-section {
-                grid-template-columns: 1fr;
-                gap: var(--space-5);
-                max-width: 100%;
-            }
-
-            .split-header .split-title {
-                font-size: var(--text-lg);
-            }
-
-            .tip-item {
-                padding: var(--space-3);
-            }
-
-            .tip-item .tip-text {
-                font-size: var(--text-xs);
-            }
-
-            .conclusion-card {
-                padding: var(--space-5) var(--space-4);
-                max-width: 100%;
-            }
-
-            .conclusion-point .point-text {
-                font-size: var(--text-sm);
-            }
-
-            .final-message .text-body {
-                font-size: var(--text-base);
-            }
-
-            .nav-controls {
-                bottom: var(--space-3);
-                padding: var(--space-2) var(--space-3);
-                gap: var(--space-2);
-                max-width: 90vw;
-            }
-
-            .nav-btn {
-                width: 36px;
-                height: 36px;
-            }
-
-            .slide-counter {
-                font-size: var(--text-xs);
-                min-width: 50px;
-            }
-
-            .slide-dot {
-                width: 6px;
-                height: 6px;
-            }
-
-            .slide-dot.active {
-                width: 18px;
-            }
-
-            .fullscreen-btn {
-                top: var(--space-3);
-                right: var(--space-3);
-                width: 40px;
-                height: 40px;
-            }
-
-            .badge {
-                font-size: var(--text-xs);
-                padding: var(--space-1) var(--space-3);
-            }
-
-            .text-label {
-                font-size: 10px;
-            }
-        }
-
-        /* ── Medium phones / large phones (481px - 767px) ── */
-        @media (min-width: 481px) and (max-width: 767px) {
-            .slide {
-                padding: var(--space-5) var(--space-4);
-                justify-content: flex-start;
-                padding-top: 12vh;
-                padding-bottom: 90px;
-            }
-
-            .slide-content {
-                gap: var(--space-5);
-                max-width: 100%;
-            }
-
-            .heading-hero {
-                font-size: var(--text-4xl);
-            }
-
-            .heading-section {
-                font-size: var(--text-3xl);
-            }
-
-            .star-letter {
-                width: 64px;
-                height: 64px;
-                font-size: var(--text-3xl);
-            }
-
-            .two-cards {
-                grid-template-columns: 1fr;
-                gap: var(--space-4);
-            }
-
-            .when-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: var(--space-3);
-            }
-
-            .when-card {
-                padding: var(--space-4);
-            }
-
-            .split-section {
-                grid-template-columns: 1fr;
-                gap: var(--space-6);
-            }
-
-            .definition-card {
-                max-width: 100%;
-            }
-
-            .conclusion-card {
-                max-width: 100%;
-            }
-
-            .nav-controls {
-                bottom: var(--space-4);
-            }
-        }
-
-        /* ── Tablets (768px - 1024px) ── */
-        @media (min-width: 768px) and (max-width: 1024px) {
-            .slide {
-                padding: var(--space-6) var(--space-5);
-            }
-
-            .slide-content {
-                max-width: 95%;
-            }
-
-            .heading-hero {
-                font-size: var(--text-5xl);
-            }
-
-            .heading-section {
-                font-size: var(--text-4xl);
-            }
-
-            .two-cards {
-                grid-template-columns: 1fr 1fr;
-                gap: var(--space-5);
-            }
-
-            .step-card {
-                padding: var(--space-6);
-                min-height: 280px;
-            }
-
-            .when-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: var(--space-4);
-            }
-
-            .split-section {
-                grid-template-columns: 1fr 1fr;
-                gap: var(--space-6);
-            }
-
-            .definition-card {
-                max-width: 90%;
-            }
-
-            .conclusion-card {
-                max-width: 90%;
-            }
-        }
-
-        /* ── Landscape phones ── */
+        /* Landscape phones */
         @media (max-height: 500px) and (orientation: landscape) {
-            .slide {
+            .slide-inner {
+                padding-top: var(--space-4);
+                padding-bottom: var(--space-4);
                 justify-content: flex-start;
-                padding-top: 8vh;
-                padding-bottom: 80px;
-                overflow-y: auto;
             }
 
-            .slide-content {
-                gap: var(--space-4);
-            }
+            .slide-content { gap: var(--space-3); }
 
-            .heading-hero {
-                font-size: var(--text-3xl);
-            }
+            .star-letter { width: 48px; height: 48px; font-size: var(--text-xl); }
+            .star-visual { gap: var(--space-2); margin-bottom: 0; }
 
-            .heading-section {
-                font-size: var(--text-2xl);
-            }
+            .two-cards { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+            .step-card { padding: var(--space-4); min-height: auto; gap: var(--space-2); }
 
-            .star-letter {
-                width: 48px;
-                height: 48px;
-                font-size: var(--text-xl);
-            }
+            .when-grid { grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+            .when-card { padding: var(--space-3); }
 
-            .two-cards {
-                grid-template-columns: 1fr 1fr;
-                gap: var(--space-3);
-            }
+            .split-section { grid-template-columns: 1fr 1fr; gap: var(--space-4); }
 
-            .step-card {
-                padding: var(--space-4);
-                min-height: auto;
-                gap: var(--space-3);
-            }
+            .conclusion-card { padding: var(--space-5) var(--space-6); }
+            .conclusion-card .text-body { margin-bottom: var(--space-4); }
 
-            .when-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: var(--space-3);
-            }
+            .definition-card { padding: var(--space-4); }
 
-            .when-card {
-                padding: var(--space-3);
-            }
-
-            .when-card .icon-box {
-                width: 40px;
-                height: 40px;
-            }
-
-            .split-section {
-                grid-template-columns: 1fr 1fr;
-                gap: var(--space-4);
-            }
-
-            .conclusion-card {
-                padding: var(--space-5) var(--space-6);
-            }
-
-            .nav-controls {
-                bottom: var(--space-2);
-                padding: var(--space-2) var(--space-4);
-            }
+            .nav-controls { bottom: var(--space-2); padding: var(--space-2) var(--space-4); }
         }
 
-        /* ── Large screens (1440px+) ── */
+        /* Small phones */
+        @media (max-width: 480px) {
+            :root { --nav-h: 60px; }
+
+            .slide-content { gap: var(--space-4); max-width: 100%; }
+            .slide-inner { padding: var(--space-6) var(--space-3) var(--space-4); justify-content: flex-start; }
+
+            .star-letter { width: 52px; height: 52px; font-size: var(--text-2xl); }
+            .star-visual { gap: var(--space-2); }
+            .star-letter-small { width: 40px; height: 40px; font-size: var(--text-xl); }
+
+            .definition-card { padding: var(--space-4); }
+            .star-item { min-width: 70px; padding: var(--space-2); }
+
+            .two-cards { grid-template-columns: 1fr; gap: var(--space-4); max-width: 100%; }
+            .step-card { padding: var(--space-4); min-height: auto; }
+
+            .when-grid { grid-template-columns: 1fr; gap: var(--space-3); max-width: 100%; }
+            .when-card { padding: var(--space-4); flex-direction: row; text-align: left; }
+            .when-card .icon-box { width: 44px; height: 44px; }
+
+            .split-section { grid-template-columns: 1fr; gap: var(--space-5); max-width: 100%; }
+            .split-header .split-title { font-size: var(--text-lg); }
+            .tip-item { padding: var(--space-3); }
+
+            .conclusion-card { padding: var(--space-5) var(--space-4); max-width: 100%; }
+            .conclusion-card .text-body { margin-bottom: var(--space-4); }
+
+            .nav-btn { width: 36px; height: 36px; }
+            .slide-counter { font-size: var(--text-xs); min-width: 44px; }
+            .slide-dot { width: 6px; height: 6px; }
+            .slide-dot.active { width: 18px; }
+
+            .fullscreen-btn { top: var(--space-3); right: var(--space-3); width: 38px; height: 38px; }
+            .fullscreen-btn svg { width: 18px; height: 18px; }
+        }
+
+        /* Medium phones (481–767) */
+        @media (min-width: 481px) and (max-width: 767px) {
+            .slide-inner { justify-content: flex-start; padding: var(--space-8) var(--space-5) var(--space-5); }
+            .slide-content { gap: var(--space-5); }
+
+            .two-cards { grid-template-columns: 1fr; gap: var(--space-4); }
+            .when-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+            .split-section { grid-template-columns: 1fr; gap: var(--space-6); }
+            .definition-card { max-width: 100%; }
+            .conclusion-card { max-width: 100%; }
+        }
+
+        /* Tablets (768–1024) */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .slide-content { max-width: 95%; }
+
+            .two-cards { grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+            .step-card { padding: var(--space-6); min-height: 260px; }
+
+            .when-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+            .split-section { grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+            .definition-card { max-width: 90%; }
+            .conclusion-card { max-width: 90%; }
+        }
+
+        /* Large (1440+) */
         @media (min-width: 1440px) {
-            .slide-content {
-                max-width: 1400px;
-            }
-
-            .heading-hero {
-                font-size: var(--text-6xl);
-            }
-
-            .heading-section {
-                font-size: var(--text-5xl);
-            }
-
-            .two-cards {
-                gap: var(--space-8);
-                max-width: 1200px;
-            }
-
-            .step-card {
-                padding: var(--space-10);
-                min-height: 380px;
-            }
-
-            .when-grid {
-                gap: var(--space-6);
-                max-width: 1200px;
-            }
-
-            .definition-card {
-                max-width: 900px;
-                padding: var(--space-10);
-            }
-
-            .conclusion-card {
-                max-width: 900px;
-                padding: var(--space-12) var(--space-10);
-            }
-
-            .split-section {
-                max-width: 1200px;
-                gap: var(--space-10);
-            }
+            .slide-content { max-width: 1400px; }
+            .two-cards { gap: var(--space-8); max-width: 1200px; }
+            .step-card { padding: var(--space-10); min-height: 360px; }
+            .when-grid { gap: var(--space-6); max-width: 1200px; }
+            .definition-card { max-width: 900px; padding: var(--space-10); }
+            .conclusion-card { max-width: 900px; padding: var(--space-12) var(--space-10); }
+            .split-section { max-width: 1200px; gap: var(--space-10); }
         }
 
-        /* ── Ultra-wide (1920px+) ── */
+        /* Ultra-wide (1920+) */
         @media (min-width: 1920px) {
-            html {
-                font-size: 20px;
-            }
-
-            .slide-content {
-                max-width: 1600px;
-            }
+            html { font-size: 20px; }
+            .slide-content { max-width: 1600px; }
         }
 
         /* ═══════════════════════════════════════════════════════════
@@ -1444,13 +1175,22 @@
                 transition-duration: 0.01ms !important;
             }
 
-            .slide {
-                transition: opacity 0.01ms, transform 0.01ms, visibility 0s;
+            .slide { transition: opacity 0.01ms, transform 0.01ms, visibility 0s; }
+
+            .slide.active .animate-in,
+            .slide.active .star-visual .star-letter,
+            .slide.active .card,
+            .slide.active .conclusion-card,
+            .slide.active .definition-card {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
             }
 
-            .slide.active .animate-in {
-                animation: none;
-                opacity: 1;
+            .slide.active .subtitle-line {
+                animation: none !important;
+                opacity: 1 !important;
+                width: 60px !important;
             }
         }
 
@@ -1462,276 +1202,10 @@
             outline-offset: 2px;
             border-radius: var(--radius-sm);
         }
-
-        button:focus-visible {
-            outline: 2px solid var(--color-brand-primary);
-            outline-offset: 2px;
-        }
-
-        /* ═══════════════════════════════════════════════════════════
-           FULLSCREEN BUTTON
-           ═══════════════════════════════════════════════════════════ */
-        .fullscreen-btn {
-            position: fixed;
-            top: var(--space-4);
-            right: var(--space-4);
-            z-index: 100;
-            width: 44px;
-            height: 44px;
-            border-radius: var(--radius-md);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            color: var(--color-text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--transition-fast);
-            outline: none;
-            box-shadow: var(--shadow-md);
-            touch-action: manipulation;
-        }
-
-        @media (max-width: 480px) {
-            .fullscreen-btn {
-                top: var(--space-3);
-                right: var(--space-3);
-                width: 40px;
-                height: 40px;
-            }
-
-            .fullscreen-btn svg {
-                width: 18px;
-                height: 18px;
-            }
-        }
-
-        .fullscreen-btn:hover {
-            background: var(--color-bg-surface);
-            color: var(--color-text-primary);
-            transform: scale(1.05);
-            border-color: rgba(99, 102, 241, 0.3);
-        }
-
-        .fullscreen-btn:active {
-            transform: scale(0.95);
-        }
-
-        .fullscreen-btn:focus-visible {
-            box-shadow: 0 0 0 3px var(--color-brand-glow);
-        }
-
-        .fullscreen-btn.hidden {
-            opacity: 0;
-            pointer-events: none;
-            transform: scale(0.8);
-        }
-
-        .fullscreen-btn svg {
-            width: 20px;
-            height: 20px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        /* ═══════════════════════════════════════════════════════════
-           ENHANCED TRANSITIONS & ANIMATIONS
-           ═══════════════════════════════════════════════════════════ */
-        .slide {
-            transition: opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
-                        transform 500ms cubic-bezier(0.4, 0, 0.2, 1),
-                        visibility 0s 500ms;
-        }
-
-        .slide.active {
-            transition: opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
-                        transform 500ms cubic-bezier(0.4, 0, 0.2, 1),
-                        visibility 0s 0s;
-        }
-
-        .slide.prev {
-            transform: translateX(-80px) scale(0.96);
-            opacity: 0;
-        }
-
-        .slide:not(.active):not(.prev) {
-            transform: translateX(80px) scale(0.96);
-        }
-
-        /* Staggered card entrance animations */
-        .card {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        .slide.active .card {
-            animation: cardEntrance 0.5s ease-out forwards;
-        }
-
-        .slide.active .card:nth-child(1) { animation-delay: 0.15s; }
-        .slide.active .card:nth-child(2) { animation-delay: 0.25s; }
-        .slide.active .card:nth-child(3) { animation-delay: 0.35s; }
-        .slide.active .card:nth-child(4) { animation-delay: 0.45s; }
-        .slide.active .card:nth-child(5) { animation-delay: 0.55s; }
-        .slide.active .card:nth-child(6) { animation-delay: 0.65s; }
-
-        @keyframes cardEntrance {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* Enhanced star letter animations */
-        .star-visual .star-letter {
-            opacity: 0;
-            transform: translateY(40px) scale(0.5) rotate(-10deg);
-        }
-
-        .slide.active .star-visual .star-letter {
-            animation: letterEntrance 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-        .slide.active .star-visual .star-letter:nth-child(1) { animation-delay: 0.1s; }
-        .slide.active .star-visual .star-letter:nth-child(2) { animation-delay: 0.25s; }
-        .slide.active .star-visual .star-letter:nth-child(3) { animation-delay: 0.4s; }
-        .slide.active .star-visual .star-letter:nth-child(4) { animation-delay: 0.55s; }
-
-        @keyframes letterEntrance {
-            from { opacity: 0; transform: translateY(40px) scale(0.5) rotate(-10deg); }
-            to { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
-        }
-
-        /* Badge pulse animation */
-        .slide.active .badge {
-            animation: badgePulse 2s ease-in-out infinite;
-        }
-
-        @keyframes badgePulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.0); }
-            50% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.08); }
-        }
-
-        /* Progress bar shimmer */
-        .progress-bar {
-            background: linear-gradient(90deg, var(--color-brand-primary), var(--color-brand-secondary), var(--color-brand-primary));
-            background-size: 200% 100%;
-            animation: progressShimmer 2s linear infinite;
-        }
-
-        @keyframes progressShimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* Nav controls entrance */
-        .nav-controls {
-            opacity: 0;
-            transform: translateX(-50%) translateY(20px);
-            animation: navEntrance 0.6s ease-out 0.8s forwards;
-        }
-
-        @keyframes navEntrance {
-            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-
-        /* Fullscreen button entrance */
-        .fullscreen-btn {
-            opacity: 0;
-            transform: scale(0.8) translateY(-10px);
-            animation: fullscreenEntrance 0.6s ease-out 1s forwards;
-        }
-
-        @keyframes fullscreenEntrance {
-            from { opacity: 0; transform: scale(0.8) translateY(-10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        /* Hover lift effect for cards */
-        .card {
-            transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
-        }
-
-        .card:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: var(--shadow-xl), 0 0 30px rgba(99, 102, 241, 0.08);
-            border-color: rgba(99, 102, 241, 0.15);
-        }
-
-        /* Star item hover */
-        .star-item {
-            transition: transform var(--transition-fast);
-        }
-        .star-item:hover {
-            transform: translateY(-4px);
-        }
-
-        /* Tip item hover */
-        .tip-item {
-            transition: all var(--transition-fast);
-        }
-        .tip-item:hover {
-            background: rgba(99, 102, 241, 0.06);
-            border-color: rgba(99, 102, 241, 0.1);
-            transform: translateX(4px);
-        }
-
-        /* Conclusion point hover */
-        .conclusion-point {
-            transition: transform var(--transition-fast);
-        }
-        .conclusion-point:hover {
-            transform: translateX(6px);
-        }
-
-        /* When card hover */
-        .when-card {
-            transition: all var(--transition-normal);
-        }
-        .when-card:hover {
-            transform: translateY(-6px) scale(1.02);
-        }
-        .when-card:hover .icon-box {
-            background: var(--color-bg-accent-strong);
-            transform: scale(1.1);
-        }
-        .when-card .icon-box {
-            transition: all var(--transition-normal);
-        }
-
-        /* Subtitle line animation */
-        .subtitle-line {
-            width: 0;
-            opacity: 0;
-        }
-
-        .slide.active .subtitle-line {
-            animation: lineGrow 0.8s ease-out 0.6s forwards;
-        }
-
-        @keyframes lineGrow {
-            from { width: 0; opacity: 0; }
-            to { width: 60px; opacity: 1; }
-        }
-
-        /* Background mesh subtle animation */
-        .bg-mesh {
-            animation: meshFloat 20s ease-in-out infinite;
-        }
-
-        @keyframes meshFloat {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.05) rotate(1deg); }
-        }
     </style>
-<base target="_blank">
-<base target="_blank">
 </head>
 <body>
-    <!-- Background Effects -->
+    <!-- Background -->
     <div class="bg-mesh"></div>
     <div class="bg-grid"></div>
 
@@ -1747,354 +1221,348 @@
     <!-- Presentation -->
     <div class="presentation" id="presentation">
 
-        <!-- ═══════════════════════════════════════════════════════════
-             SLIDE 1: Título
-             ═══════════════════════════════════════════════════════════ -->
+        <!-- ═══ SLIDE 1: Título ═══ -->
         <div class="slide slide-title active" data-slide="0">
-            <div class="slide-content">
-                <div class="animate-in">
-                    <div class="star-visual">
-                        <div class="star-letter s">S</div>
-                        <div class="star-letter t">T</div>
-                        <div class="star-letter a">A</div>
-                        <div class="star-letter r">R</div>
+            <div class="slide-inner">
+                <div class="slide-content">
+                    <div class="animate-in">
+                        <div class="star-visual">
+                            <div class="star-letter s">S</div>
+                            <div class="star-letter t">T</div>
+                            <div class="star-letter a">A</div>
+                            <div class="star-letter r">R</div>
+                        </div>
                     </div>
-                </div>
-                <div class="animate-in">
-                    <h1 class="heading-hero">Metodologia STAR</h1>
-                </div>
-                <div class="animate-in">
-                    <div class="subtitle-line"></div>
-                </div>
-                <div class="animate-in">
-                    <p class="text-body">Uma ferramenta estratégica para organizar ideias,<br>contar experiências e demonstrar habilidades com clareza</p>
-                </div>
-                <div class="animate-in">
-                    <span class="badge badge-outline">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        Apresentação Acadêmica
-                    </span>
+                    <div class="animate-in">
+                        <h1 class="heading-hero">Metodologia STAR</h1>
+                    </div>
+                    <div class="animate-in">
+                        <div class="subtitle-line"></div>
+                    </div>
+                    <div class="animate-in">
+                        <p class="text-body">Uma ferramenta estratégica para organizar ideias,<br>contar experiências e demonstrar habilidades com clareza</p>
+                    </div>
+                    <div class="animate-in">
+                        <span class="badge badge-outline">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Apresentação Acadêmica
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════════════
-             SLIDE 2: O que é STAR
-             ═══════════════════════════════════════════════════════════ -->
+        <!-- ═══ SLIDE 2: O que é STAR ═══ -->
         <div class="slide" data-slide="1">
-            <div class="slide-content">
-                <div class="animate-in">
-                    <span class="text-label">Conceito</span>
-                </div>
-                <div class="animate-in">
-                    <h2 class="heading-section">O que é a metodologia STAR?</h2>
-                </div>
-                <div class="animate-in">
-                    <div class="definition-card">
-                        <p class="text-body">STAR é uma sigla que representa um roteiro estruturado para contar experiências reais de forma organizada e convincente. Cada letra guia uma etapa essencial da narrativa.</p>
-                        <div class="star-row">
-                            <div class="star-item">
-                                <div class="star-letter-small s">S</div>
-                                <span class="label">Situation</span>
-                                <span class="label-pt">Situação</span>
-                            </div>
-                            <div class="star-item">
-                                <div class="star-letter-small t">T</div>
-                                <span class="label">Task</span>
-                                <span class="label-pt">Tarefa</span>
-                            </div>
-                            <div class="star-item">
-                                <div class="star-letter-small a">A</div>
-                                <span class="label">Action</span>
-                                <span class="label-pt">Ação</span>
-                            </div>
-                            <div class="star-item">
-                                <div class="star-letter-small r">R</div>
-                                <span class="label">Result</span>
-                                <span class="label-pt">Resultado</span>
+            <div class="slide-inner">
+                <div class="slide-content">
+                    <div class="animate-in">
+                        <span class="text-label">Conceito</span>
+                    </div>
+                    <div class="animate-in">
+                        <h2 class="heading-section">O que é a metodologia STAR?</h2>
+                    </div>
+                    <div class="animate-in">
+                        <div class="definition-card">
+                            <p class="text-body">STAR é uma sigla que representa um roteiro estruturado para contar experiências reais de forma organizada e convincente. Cada letra guia uma etapa essencial da narrativa.</p>
+                            <div class="star-row">
+                                <div class="star-item">
+                                    <div class="star-letter-small s">S</div>
+                                    <span class="label">Situation</span>
+                                    <span class="label-pt">Situação</span>
+                                </div>
+                                <div class="star-item">
+                                    <div class="star-letter-small t">T</div>
+                                    <span class="label">Task</span>
+                                    <span class="label-pt">Tarefa</span>
+                                </div>
+                                <div class="star-item">
+                                    <div class="star-letter-small a">A</div>
+                                    <span class="label">Action</span>
+                                    <span class="label-pt">Ação</span>
+                                </div>
+                                <div class="star-item">
+                                    <div class="star-letter-small r">R</div>
+                                    <span class="label">Result</span>
+                                    <span class="label-pt">Resultado</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="animate-in">
-                    <p class="text-small" style="max-width: 600px; text-align: center;">Originalmente desenvolvida para entrevistas de emprego, a metodologia se expandiu para apresentações, redações, projetos escolares e qualquer contexto que exija clareza na comunicação.</p>
+                    <div class="animate-in">
+                        <p class="text-small" style="max-width: 600px; text-align: center;">Originalmente desenvolvida para entrevistas de emprego, a metodologia se expandiu para apresentações, redações, projetos escolares e qualquer contexto que exija clareza na comunicação.</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════════════
-             SLIDE 3: Situação + Tarefa
-             ═══════════════════════════════════════════════════════════ -->
+        <!-- ═══ SLIDE 3: Situação + Tarefa ═══ -->
         <div class="slide" data-slide="2">
-            <div class="slide-content">
-                <div class="animate-in">
-                    <span class="text-label">Etapas 1 e 2</span>
-                </div>
-                <div class="animate-in">
-                    <h2 class="heading-section">Situação & Tarefa</h2>
-                </div>
-                <div class="animate-in two-cards">
-                    <!-- Situation Card -->
-                    <div class="card step-card s-card">
-                        <div class="card-header">
-                            <div class="star-letter-small s">S</div>
-                            <div>
-                                <div class="card-title">Situação</div>
-                                <div class="card-subtitle">Situation</div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            Apresente o cenário com contexto claro: momento, lugar e circunstâncias. Evite generalizações vagas.
-                        </div>
-                        <div class="example-box">
-                            <div class="example-label">Exemplo</div>
-                            <div class="example-text">"Faltavam 3 dias para a feira de ciências e nosso grupo ainda não tinha montado a maquete."</div>
-                        </div>
+            <div class="slide-inner">
+                <div class="slide-content">
+                    <div class="animate-in">
+                        <span class="text-label">Etapas 1 e 2</span>
                     </div>
-                    <!-- Task Card -->
-                    <div class="card step-card t-card">
-                        <div class="card-header">
-                            <div class="star-letter-small t">T</div>
-                            <div>
-                                <div class="card-title">Tarefa</div>
-                                <div class="card-subtitle">Task</div>
+                    <div class="animate-in">
+                        <h2 class="heading-section">Situação & Tarefa</h2>
+                    </div>
+                    <div class="animate-in two-cards">
+                        <div class="card step-card s-card">
+                            <div class="card-header">
+                                <div class="star-letter-small s">S</div>
+                                <div>
+                                    <div class="card-title">Situação</div>
+                                    <div class="card-subtitle">Situation</div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                Apresente o cenário com contexto claro: momento, lugar e circunstâncias. Evite generalizações vagas.
+                            </div>
+                            <div class="example-box">
+                                <div class="example-label">Exemplo</div>
+                                <div class="example-text">"Faltavam 3 dias para a feira de ciências e nosso grupo ainda não tinha montado a maquete."</div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            Explique qual era a sua responsabilidade específica naquela situação. Deixe claro o seu papel.
-                        </div>
-                        <div class="example-box">
-                            <div class="example-label">Exemplo</div>
-                            <div class="example-text">"Eu era responsável por organizar os materiais e montar a estrutura da maquete."</div>
+                        <div class="card step-card t-card">
+                            <div class="card-header">
+                                <div class="star-letter-small t">T</div>
+                                <div>
+                                    <div class="card-title">Tarefa</div>
+                                    <div class="card-subtitle">Task</div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                Explique qual era a sua responsabilidade específica naquela situação. Deixe claro o seu papel.
+                            </div>
+                            <div class="example-box">
+                                <div class="example-label">Exemplo</div>
+                                <div class="example-text">"Eu era responsável por organizar os materiais e montar a estrutura da maquete."</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════════════
-             SLIDE 4: Ação + Resultado
-             ═══════════════════════════════════════════════════════════ -->
+        <!-- ═══ SLIDE 4: Ação + Resultado ═══ -->
         <div class="slide" data-slide="3">
-            <div class="slide-content">
-                <div class="animate-in">
-                    <span class="text-label">Etapas 3 e 4</span>
-                </div>
-                <div class="animate-in">
-                    <h2 class="heading-section">Ação & Resultado</h2>
-                </div>
-                <div class="animate-in two-cards">
-                    <!-- Action Card -->
-                    <div class="card step-card a-card">
-                        <div class="card-header">
-                            <div class="star-letter-small a">A</div>
-                            <div>
-                                <div class="card-title">Ação</div>
-                                <div class="card-subtitle">Action</div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            Descreva o que <strong>você</strong> fez para lidar com a situação. Use "eu" em vez de "a gente" para destacar sua contribuição.
-                        </div>
-                        <div class="example-box">
-                            <div class="example-label">Exemplo</div>
-                            <div class="example-text">"Fiz uma lista do que faltava, dividi as tarefas e acompanhei o progresso de cada integrante."</div>
-                        </div>
+            <div class="slide-inner">
+                <div class="slide-content">
+                    <div class="animate-in">
+                        <span class="text-label">Etapas 3 e 4</span>
                     </div>
-                    <!-- Result Card -->
-                    <div class="card step-card r-card">
-                        <div class="card-header">
-                            <div class="star-letter-small r">R</div>
-                            <div>
-                                <div class="card-title">Resultado</div>
-                                <div class="card-subtitle">Result</div>
+                    <div class="animate-in">
+                        <h2 class="heading-section">Ação & Resultado</h2>
+                    </div>
+                    <div class="animate-in two-cards">
+                        <div class="card step-card a-card">
+                            <div class="card-header">
+                                <div class="star-letter-small a">A</div>
+                                <div>
+                                    <div class="card-title">Ação</div>
+                                    <div class="card-subtitle">Action</div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                Descreva o que <strong>você</strong> fez para lidar com a situação. Use "eu" em vez de "a gente" para destacar sua contribuição.
+                            </div>
+                            <div class="example-box">
+                                <div class="example-label">Exemplo</div>
+                                <div class="example-text">"Fiz uma lista do que faltava, dividi as tarefas e acompanhei o progresso de cada integrante."</div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            Mostre o que aconteceu depois. Sempre que possível, use números, notas ou conquistas concretas.
-                        </div>
-                        <div class="example-box">
-                            <div class="example-label">Exemplo</div>
-                            <div class="example-text">"Terminamos um dia antes do prazo, tiramos nota 9,5 e nosso trabalho foi usado como exemplo."</div>
+                        <div class="card step-card r-card">
+                            <div class="card-header">
+                                <div class="star-letter-small r">R</div>
+                                <div>
+                                    <div class="card-title">Resultado</div>
+                                    <div class="card-subtitle">Result</div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                Mostre o que aconteceu depois. Sempre que possível, use números, notas ou conquistas concretas.
+                            </div>
+                            <div class="example-box">
+                                <div class="example-label">Exemplo</div>
+                                <div class="example-text">"Terminamos um dia antes do prazo, tiramos nota 9,5 e nosso trabalho foi usado como exemplo."</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════════════
-             SLIDE 5: Quando usar
-             ═══════════════════════════════════════════════════════════ -->
+        <!-- ═══ SLIDE 5: Quando usar ═══ -->
         <div class="slide" data-slide="4">
-            <div class="slide-content">
-                <div class="animate-in">
-                    <span class="text-label">Aplicação</span>
-                </div>
-                <div class="animate-in">
-                    <h2 class="heading-section">Quando usar o STAR?</h2>
-                </div>
-                <div class="animate-in when-grid">
-                    <div class="card when-card">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        </div>
-                        <div class="when-title">Entrevistas</div>
-                        <div class="when-desc">Responda perguntas comportamentais com exemplos concretos de experiências passadas</div>
+            <div class="slide-inner">
+                <div class="slide-content">
+                    <div class="animate-in">
+                        <span class="text-label">Aplicação</span>
                     </div>
-                    <div class="card when-card">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                        </div>
-                        <div class="when-title">Apresentações</div>
-                        <div class="when-desc">Estruture relatos de experiência de forma clara e convincente para qualquer audiência</div>
+                    <div class="animate-in">
+                        <h2 class="heading-section">Quando usar o STAR?</h2>
                     </div>
-                    <div class="card when-card">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <div class="animate-in when-grid">
+                        <div class="card when-card">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            </div>
+                            <div class="when-title">Entrevistas</div>
+                            <div class="when-desc">Responda perguntas comportamentais com exemplos concretos de experiências passadas</div>
                         </div>
-                        <div class="when-title">Redações</div>
-                        <div class="when-desc">Organize argumentos e exemplos pessoais com estrutura lógica e fluidez narrativa</div>
-                    </div>
-                    <div class="card when-card">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <div class="card when-card">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            </div>
+                            <div class="when-title">Apresentações</div>
+                            <div class="when-desc">Estruture relatos de experiência de forma clara e convincente para qualquer audiência</div>
                         </div>
-                        <div class="when-title">Projetos em Grupo</div>
-                        <div class="when-desc">Comunique sua contribuição individual de maneira objetiva e mensurável</div>
-                    </div>
-                    <div class="card when-card">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <div class="card when-card">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            </div>
+                            <div class="when-title">Redações</div>
+                            <div class="when-desc">Organize argumentos e exemplos pessoais com estrutura lógica e fluidez narrativa</div>
                         </div>
-                        <div class="when-title">Relatos de Experiência</div>
-                        <div class="when-desc">Documente aprendizados e processos vividos de forma cronológica e organizada</div>
-                    </div>
-                    <div class="card when-card">
-                        <div class="icon-box">
-                            <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        <div class="card when-card">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <div class="when-title">Projetos em Grupo</div>
+                            <div class="when-desc">Comunique sua contribuição individual de maneira objetiva e mensurável</div>
                         </div>
-                        <div class="when-title">Trabalhos Escolares</div>
-                        <div class="when-desc">Estruture respostas dissertativas e análises de caso com clareza argumentativa</div>
+                        <div class="card when-card">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            </div>
+                            <div class="when-title">Relatos de Experiência</div>
+                            <div class="when-desc">Documente aprendizados e processos vividos de forma cronológica e organizada</div>
+                        </div>
+                        <div class="card when-card">
+                            <div class="icon-box">
+                                <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </div>
+                            <div class="when-title">Trabalhos Escolares</div>
+                            <div class="when-desc">Estruture respostas dissertativas e análises de caso com clareza argumentativa</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════════════
-             SLIDE 6: Erros & Dicas
-             ═══════════════════════════════════════════════════════════ -->
+        <!-- ═══ SLIDE 6: Erros & Dicas ═══ -->
         <div class="slide" data-slide="5">
-            <div class="slide-content">
-                <div class="animate-in">
-                    <span class="text-label">Boas Práticas</span>
-                </div>
-                <div class="animate-in">
-                    <h2 class="heading-section">Erros Comuns & Dicas Práticas</h2>
-                </div>
-                <div class="animate-in split-section">
-                    <!-- Erros -->
-                    <div class="split-col">
-                        <div class="split-header">
-                            <div class="split-icon danger">
-                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                            </div>
-                            <div class="split-title danger">Erros que Estragam</div>
-                        </div>
-                        <div class="tip-item">
-                            <div class="tip-num danger">1</div>
-                            <div class="tip-text">Passar muito tempo na situação e pouco nas ações realizadas</div>
-                        </div>
-                        <div class="tip-item">
-                            <div class="tip-num danger">2</div>
-                            <div class="tip-text">Falar apenas no coletivo — "a gente resolveu" esconde sua contribuição</div>
-                        </div>
-                        <div class="tip-item">
-                            <div class="tip-num danger">3</div>
-                            <div class="tip-text">Esquecer o resultado — contar a história toda e parar antes do final</div>
-                        </div>
-                        <div class="tip-item">
-                            <div class="tip-num danger">4</div>
-                            <div class="tip-text">Inventar histórias — ficam perceptíveis com perguntas de aprofundamento</div>
-                        </div>
-                        <div class="tip-item">
-                            <div class="tip-num danger">5</div>
-                            <div class="tip-text">Incluir informações desnecessárias que não respondem à pergunta</div>
-                        </div>
+            <div class="slide-inner">
+                <div class="slide-content">
+                    <div class="animate-in">
+                        <span class="text-label">Boas Práticas</span>
                     </div>
-                    <!-- Dicas -->
-                    <div class="split-col">
-                        <div class="split-header">
-                            <div class="split-icon success">
-                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    <div class="animate-in">
+                        <h2 class="heading-section">Erros Comuns & Dicas Práticas</h2>
+                    </div>
+                    <div class="animate-in split-section">
+                        <div class="split-col">
+                            <div class="split-header">
+                                <div class="split-icon danger">
+                                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                                </div>
+                                <div class="split-title danger">Erros que Estragam</div>
                             </div>
-                            <div class="split-title success">Dicas que Funcionam</div>
+                            <div class="tip-item">
+                                <div class="tip-num danger">1</div>
+                                <div class="tip-text">Passar muito tempo na situação e pouco nas ações realizadas</div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-num danger">2</div>
+                                <div class="tip-text">Falar apenas no coletivo — "a gente resolveu" esconde sua contribuição</div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-num danger">3</div>
+                                <div class="tip-text">Esquecer o resultado — contar a história toda e parar antes do final</div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-num danger">4</div>
+                                <div class="tip-text">Inventar histórias — ficam perceptíveis com perguntas de aprofundamento</div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-num danger">5</div>
+                                <div class="tip-text">Incluir informações desnecessárias que não respondem à pergunta</div>
+                            </div>
                         </div>
-                        <div class="tip-item">
-                            <div class="tip-num success">1</div>
-                            <div class="tip-text">Prepare histórias com antecedência usando experiências reais da sua vida</div>
-                        </div>
-                        <div class="tip-item">
-                            <div class="tip-num success">2</div>
-                            <div class="tip-text">Mantenha a resposta objetiva: entre 1 e 2 minutos no total</div>
-                        </div>
-                        <div class="tip-item">
-                            <div class="tip-num success">3</div>
-                            <div class="tip-text">Dedique a maior parte do tempo às ações que você realizou</div>
-                        </div>
-                        <div class="tip-item">
-                            <div class="tip-num success">4</div>
-                            <div class="tip-text">Pratique em voz alta — para amigos, familiares ou gravando no celular</div>
-                        </div>
-                        <div class="tip-item">
-                            <div class="tip-num success">5</div>
-                            <div class="tip-text">Use números e resultados concretos sempre que possível</div>
+                        <div class="split-col">
+                            <div class="split-header">
+                                <div class="split-icon success">
+                                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                </div>
+                                <div class="split-title success">Dicas que Funcionam</div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-num success">1</div>
+                                <div class="tip-text">Prepare histórias com antecedência usando experiências reais da sua vida</div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-num success">2</div>
+                                <div class="tip-text">Mantenha a resposta objetiva: entre 1 e 2 minutos no total</div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-num success">3</div>
+                                <div class="tip-text">Dedique a maior parte do tempo às ações que você realizou</div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-num success">4</div>
+                                <div class="tip-text">Pratique em voz alta — para amigos, familiares ou gravando no celular</div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-num success">5</div>
+                                <div class="tip-text">Use números e resultados concretos sempre que possível</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════════════
-             SLIDE 7: Conclusão
-             ═══════════════════════════════════════════════════════════ -->
+        <!-- ═══ SLIDE 7: Conclusão ═══ -->
         <div class="slide" data-slide="6">
-            <div class="slide-content">
-                <div class="animate-in">
-                    <div class="conclusion-card">
-                        <h2 class="heading-section">Conclusão</h2>
-                        <p class="text-body">O STAR não é uma fórmula mágica — é uma ferramenta para organizar melhor as suas ideias e transformar experiências do dia a dia em exemplos concretos das suas habilidades.</p>
-                        <div class="conclusion-points">
-                            <div class="conclusion-point">
-                                <div class="check">
-                                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            <div class="slide-inner">
+                <div class="slide-content">
+                    <div class="animate-in">
+                        <div class="conclusion-card">
+                            <h2 class="heading-section">Conclusão</h2>
+                            <p class="text-body">O STAR não é uma fórmula mágica — é uma ferramenta para organizar melhor as suas ideias e transformar experiências do dia a dia em exemplos concretos das suas habilidades.</p>
+                            <div class="conclusion-points">
+                                <div class="conclusion-point">
+                                    <div class="check">
+                                        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </div>
+                                    <div class="point-text">Organizar um evento da turma demonstra <strong>liderança</strong></div>
                                 </div>
-                                <div class="point-text">Organizar um evento da turma demonstra <strong>liderança</strong></div>
-                            </div>
-                            <div class="conclusion-point">
-                                <div class="check">
-                                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                <div class="conclusion-point">
+                                    <div class="check">
+                                        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </div>
+                                    <div class="point-text">Resolver um conflito em grupo mostra <strong>resolução de problemas</strong></div>
                                 </div>
-                                <div class="point-text">Resolver um conflito em grupo mostra <strong>resolução de problemas</strong></div>
-                            </div>
-                            <div class="conclusion-point">
-                                <div class="check">
-                                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                <div class="conclusion-point">
+                                    <div class="check">
+                                        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </div>
+                                    <div class="point-text">Aprender algo novo sozinho demonstra <strong>iniciativa e proatividade</strong></div>
                                 </div>
-                                <div class="point-text">Aprender algo novo sozinho demonstra <strong>iniciativa e proatividade</strong></div>
                             </div>
-                        </div>
-                        <div class="final-message">
-                            <p class="text-body">Prepare seus exemplos com antecedência, pratique suas respostas e falem com confiança. Mais do que responder perguntas, essa é uma oportunidade de mostrar quem vocês são e o que são capazes de fazer.</p>
+                            <div class="final-message">
+                                <p class="text-body">Prepare seus exemplos com antecedência, pratique suas respostas e falem com confiança. Mais do que responder perguntas, essa é uma oportunidade de mostrar quem vocês são e o que são capazes de fazer.</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="animate-in" style="margin-top: var(--space-4);">
-                    <span class="text-label">Obrigado pela atenção</span>
+                    <div class="animate-in" style="margin-top: var(--space-4);">
+                        <span class="text-label">Obrigado pela atenção</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-    </div>
+    </div><!-- /presentation -->
 
     <!-- Navigation Controls -->
     <nav class="nav-controls" aria-label="Navegação dos slides">
@@ -2109,7 +1577,7 @@
     </nav>
 
     <script>
-        (function() {
+        (function () {
             'use strict';
 
             const slides = document.querySelectorAll('.slide');
@@ -2122,7 +1590,7 @@
             const slideDots = document.getElementById('slideDots');
             const progressBar = document.getElementById('progressBar');
 
-            // Build dots
+            /* ── Build dots ── */
             slides.forEach((_, index) => {
                 const dot = document.createElement('button');
                 dot.className = 'slide-dot' + (index === 0 ? ' active' : '');
@@ -2137,19 +1605,13 @@
 
             function updateUI() {
                 slides.forEach((slide, index) => {
-                    const wasActive = slide.classList.contains('active');
                     slide.classList.remove('active', 'prev');
 
                     if (index === currentSlide) {
                         slide.classList.add('active');
-                        // Scroll to top of the active slide for mobile
-                        if (slide.scrollTop > 0) {
-                            slide.scrollTop = 0;
-                        }
-                        // Also scroll window to top on mobile
-                        if (window.innerWidth <= 767 || window.innerHeight <= 500) {
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }
+                        /* Scroll the inner wrapper back to top on every navigation */
+                        const inner = slide.querySelector('.slide-inner');
+                        if (inner) inner.scrollTop = 0;
                     } else if (index < currentSlide) {
                         slide.classList.add('prev');
                     }
@@ -2174,40 +1636,32 @@
                 updateUI();
             }
 
-            function nextSlide() {
-                goToSlide(currentSlide + 1);
-            }
+            function nextSlide() { goToSlide(currentSlide + 1); }
+            function prevSlide() { goToSlide(currentSlide - 1); }
 
-            function prevSlide() {
-                goToSlide(currentSlide - 1);
-            }
-
-            // Event listeners
+            /* ── Buttons ── */
             btnPrev.addEventListener('click', prevSlide);
             btnNext.addEventListener('click', nextSlide);
 
-            // Keyboard navigation
+            /* ── Keyboard ── */
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
-                    e.preventDefault();
-                    nextSlide();
-                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    prevSlide();
-                } else if (e.key === 'Home') {
-                    e.preventDefault();
-                    goToSlide(0);
-                } else if (e.key === 'End') {
-                    e.preventDefault();
-                    goToSlide(totalSlides - 1);
+                switch (e.key) {
+                    case 'ArrowRight':
+                    case 'ArrowDown':
+                    case ' ':
+                        e.preventDefault(); nextSlide(); break;
+                    case 'ArrowLeft':
+                    case 'ArrowUp':
+                        e.preventDefault(); prevSlide(); break;
+                    case 'Home':
+                        e.preventDefault(); goToSlide(0); break;
+                    case 'End':
+                        e.preventDefault(); goToSlide(totalSlides - 1); break;
                 }
             });
 
-            // Touch/swipe support with improved detection
-            let touchStartX = 0;
-            let touchStartY = 0;
-            let touchEndX = 0;
-            let touchEndY = 0;
+            /* ── Touch / swipe ── */
+            let touchStartX = 0, touchStartY = 0;
 
             document.addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
@@ -2215,70 +1669,69 @@
             }, { passive: true });
 
             document.addEventListener('touchend', (e) => {
-                touchEndX = e.changedTouches[0].screenX;
-                touchEndY = e.changedTouches[0].screenY;
-                const diffX = touchStartX - touchEndX;
-                const diffY = touchStartY - touchEndY;
-                // Only trigger if horizontal swipe is dominant
+                const diffX = touchStartX - e.changedTouches[0].screenX;
+                const diffY = touchStartY - e.changedTouches[0].screenY;
+                /* Only register horizontal swipes that are clearly dominant */
                 if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
                     if (diffX > 0) nextSlide();
                     else prevSlide();
                 }
             }, { passive: true });
 
-
-            // Fullscreen functionality
+            /* ── Fullscreen ── */
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             const iconEnter = document.getElementById('iconEnter');
             const iconExit = document.getElementById('iconExit');
 
             function updateFullscreenIcon() {
-                if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
-                    iconEnter.style.display = 'none';
-                    iconExit.style.display = 'block';
-                    fullscreenBtn.setAttribute('aria-label', 'Sair da tela cheia');
-                    fullscreenBtn.classList.add('hidden');
-                } else {
-                    iconEnter.style.display = 'block';
-                    iconExit.style.display = 'none';
-                    fullscreenBtn.setAttribute('aria-label', 'Entrar em tela cheia');
-                    fullscreenBtn.classList.remove('hidden');
-                }
+                const isFs = !!(
+                    document.fullscreenElement ||
+                    document.webkitFullscreenElement ||
+                    document.mozFullScreenElement ||
+                    document.msFullscreenElement
+                );
+                iconEnter.style.display = isFs ? 'none' : 'block';
+                iconExit.style.display  = isFs ? 'block' : 'none';
+                fullscreenBtn.setAttribute('aria-label', isFs ? 'Sair da tela cheia' : 'Entrar em tela cheia');
+                if (isFs) fullscreenBtn.classList.add('hidden');
+                else      fullscreenBtn.classList.remove('hidden');
             }
 
             fullscreenBtn.addEventListener('click', () => {
-                if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+                const isFs = !!(
+                    document.fullscreenElement ||
+                    document.webkitFullscreenElement ||
+                    document.mozFullScreenElement ||
+                    document.msFullscreenElement
+                );
+                if (!isFs) {
                     const el = document.documentElement;
-                    if (el.requestFullscreen) el.requestFullscreen();
-                    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-                    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
-                    else if (el.msRequestFullscreen) el.msRequestFullscreen();
+                    (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen).call(el);
                 } else {
-                    if (document.exitFullscreen) document.exitFullscreen();
-                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-                    else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-                    else if (document.msExitFullscreen) document.msExitFullscreen();
+                    (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen).call(document);
                 }
             });
 
-            document.addEventListener('fullscreenchange', updateFullscreenIcon);
-            document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
-            document.addEventListener('mozfullscreenchange', updateFullscreenIcon);
-            document.addEventListener('MSFullscreenChange', updateFullscreenIcon);
+            ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange']
+                .forEach(ev => document.addEventListener(ev, updateFullscreenIcon));
 
-            // Show fullscreen button on mouse move (when in fullscreen)
-            let fullscreenHideTimeout;
+            /* Show button briefly on mouse move while in fullscreen */
+            let fsHideTimer;
             document.addEventListener('mousemove', () => {
-                if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+                const isFs = !!(
+                    document.fullscreenElement ||
+                    document.webkitFullscreenElement ||
+                    document.mozFullScreenElement ||
+                    document.msFullscreenElement
+                );
+                if (isFs) {
                     fullscreenBtn.classList.remove('hidden');
-                    clearTimeout(fullscreenHideTimeout);
-                    fullscreenHideTimeout = setTimeout(() => {
-                        fullscreenBtn.classList.add('hidden');
-                    }, 3000);
+                    clearTimeout(fsHideTimer);
+                    fsHideTimer = setTimeout(() => fullscreenBtn.classList.add('hidden'), 3000);
                 }
             });
 
-            // Initialize
+            /* ── Init ── */
             updateUI();
             updateFullscreenIcon();
         })();
