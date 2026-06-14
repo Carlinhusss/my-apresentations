@@ -121,11 +121,12 @@
             width: 100dvw;
         }
 
-        /* Allow scroll on small screens when content overflows */
+        /* Keep body locked, scroll inside active slide only */
         @media (max-width: 767px), (max-height: 500px) {
             body {
-                overflow-y: auto;
-                overflow-x: hidden;
+                overflow: hidden;
+                height: 100vh;
+                height: 100dvh;
             }
         }
 
@@ -168,10 +169,9 @@
 
         @media (max-width: 767px), (max-height: 500px) {
             .presentation {
-                height: auto;
-                min-height: 100vh;
-                min-height: 100dvh;
-                overflow: visible;
+                height: 100vh;
+                height: 100dvh;
+                overflow: hidden;
             }
         }
 
@@ -195,11 +195,15 @@
 
         @media (max-width: 767px), (max-height: 500px) {
             .slide {
-                position: relative;
-                min-height: 100vh;
-                min-height: 100dvh;
                 transform: translateX(30px);
-                padding-bottom: 100px;
+                padding: var(--space-5) var(--space-4) 100px;
+                justify-content: flex-start;
+                padding-top: 10vh;
+            }
+
+            .slide.active {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
 
             .slide.prev {
@@ -983,9 +987,13 @@
             to { opacity: 1; transform: scale(1); }
         }
 
+        .animate-in {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+
         .slide.active .animate-in {
             animation: fadeInUp 0.5s ease-out forwards;
-            opacity: 0;
         }
 
         .slide.active .animate-in:nth-child(1) { animation-delay: 0.1s; }
@@ -1556,8 +1564,13 @@
         }
 
         /* Staggered card entrance animations */
+        .card {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
         .slide.active .card {
-            animation: cardEntrance 0.5s ease-out backwards;
+            animation: cardEntrance 0.5s ease-out forwards;
         }
 
         .slide.active .card:nth-child(1) { animation-delay: 0.15s; }
@@ -1574,12 +1587,17 @@
 
         /* Enhanced star letter animations */
         .star-visual .star-letter {
-            animation: letterEntrance 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+            opacity: 0;
+            transform: translateY(40px) scale(0.5) rotate(-10deg);
         }
-        .star-visual .star-letter:nth-child(1) { animation-delay: 0.1s; }
-        .star-visual .star-letter:nth-child(2) { animation-delay: 0.25s; }
-        .star-visual .star-letter:nth-child(3) { animation-delay: 0.4s; }
-        .star-visual .star-letter:nth-child(4) { animation-delay: 0.55s; }
+
+        .slide.active .star-visual .star-letter {
+            animation: letterEntrance 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .slide.active .star-visual .star-letter:nth-child(1) { animation-delay: 0.1s; }
+        .slide.active .star-visual .star-letter:nth-child(2) { animation-delay: 0.25s; }
+        .slide.active .star-visual .star-letter:nth-child(3) { animation-delay: 0.4s; }
+        .slide.active .star-visual .star-letter:nth-child(4) { animation-delay: 0.55s; }
 
         @keyframes letterEntrance {
             from { opacity: 0; transform: translateY(40px) scale(0.5) rotate(-10deg); }
@@ -1587,7 +1605,7 @@
         }
 
         /* Badge pulse animation */
-        .badge {
+        .slide.active .badge {
             animation: badgePulse 2s ease-in-out infinite;
         }
 
@@ -1610,7 +1628,9 @@
 
         /* Nav controls entrance */
         .nav-controls {
-            animation: navEntrance 0.6s ease-out 0.8s backwards;
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+            animation: navEntrance 0.6s ease-out 0.8s forwards;
         }
 
         @keyframes navEntrance {
@@ -1620,7 +1640,9 @@
 
         /* Fullscreen button entrance */
         .fullscreen-btn {
-            animation: fullscreenEntrance 0.6s ease-out 1s backwards;
+            opacity: 0;
+            transform: scale(0.8) translateY(-10px);
+            animation: fullscreenEntrance 0.6s ease-out 1s forwards;
         }
 
         @keyframes fullscreenEntrance {
@@ -1682,7 +1704,12 @@
 
         /* Subtitle line animation */
         .subtitle-line {
-            animation: lineGrow 0.8s ease-out 0.6s backwards;
+            width: 0;
+            opacity: 0;
+        }
+
+        .slide.active .subtitle-line {
+            animation: lineGrow 0.8s ease-out 0.6s forwards;
         }
 
         @keyframes lineGrow {
@@ -2110,9 +2137,19 @@
 
             function updateUI() {
                 slides.forEach((slide, index) => {
+                    const wasActive = slide.classList.contains('active');
                     slide.classList.remove('active', 'prev');
+
                     if (index === currentSlide) {
                         slide.classList.add('active');
+                        // Scroll to top of the active slide for mobile
+                        if (slide.scrollTop > 0) {
+                            slide.scrollTop = 0;
+                        }
+                        // Also scroll window to top on mobile
+                        if (window.innerWidth <= 767 || window.innerHeight <= 500) {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
                     } else if (index < currentSlide) {
                         slide.classList.add('prev');
                     }
