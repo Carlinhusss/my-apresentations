@@ -936,6 +936,48 @@
         .final-message .text-body { font-size: var(--text-base); font-weight: 500; color: var(--color-text-primary); }
 
         /* ═══════════════════════════════════════════════════════════
+           SLIDE-SPECIFIC: QR CODE (Slide 8)
+           ═══════════════════════════════════════════════════════════ */
+        .qr-card {
+            background: #FFFFFF;
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-xl), 0 0 50px var(--color-brand-glow);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .qr-card img {
+            display: block;
+            width: clamp(180px, 32vw, 380px);
+            height: clamp(180px, 32vw, 380px);
+            object-fit: contain;
+            border-radius: var(--radius-sm);
+        }
+
+        .slide.active .qr-card {
+            animation: cardEntrance 0.5s ease-out 0.15s both;
+        }
+
+        .slide:not(.active) .qr-card {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            animation: none;
+        }
+
+        @media (max-width: 480px) {
+            .qr-card { padding: var(--space-5); }
+            .qr-card img { width: clamp(160px, 60vw, 280px); height: clamp(160px, 60vw, 280px); }
+        }
+
+        @media (max-height: 500px) and (orientation: landscape) {
+            .qr-card { padding: var(--space-4); }
+            .qr-card img { width: clamp(140px, 28vh, 240px); height: clamp(140px, 28vh, 240px); }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
            ANIMATE-IN ELEMENTS
            These are the generic stagger animations for text/labels.
            Cards use their own keyframe (cardEntrance).
@@ -1557,6 +1599,28 @@
                     </div>
                     <div class="animate-in" style="margin-top: var(--space-4);">
                         <span class="text-label">Obrigado pela atenção</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ SLIDE 8: QR Code ═══ -->
+        <div class="slide" data-slide="7">
+            <div class="slide-inner">
+                <div class="slide-content">
+                    <div class="animate-in">
+                        <span class="text-label">Sua Vez</span>
+                    </div>
+                    <div class="animate-in">
+                        <h2 class="heading-section">Aponte a câmera e participe!</h2>
+                    </div>
+                    <div class="animate-in">
+                        <div class="qr-card">
+                            <img src="assets/qrcode.png" alt="QR Code">
+                        </div>
+                    </div>
+                    <div class="animate-in">
+                        <p class="text-body">Escaneie o QR Code e responda 6 perguntas rápidas sobre o que vimos hoje</p>
                     </div>
                 </div>
             </div>
